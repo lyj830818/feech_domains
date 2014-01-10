@@ -1,0 +1,28 @@
+{
+  "name": "fetch_domain",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-mocha-cli": "~1.5.0",
+    "grunt-contrib-watch": "~0.5.3",
+    "grunt-contrib-jshint": "~0.8.0"
+  },
+  "dependencies": {
+    "chai": "~1.8.1",
+    "phantom": "~0.5.4",
+    "request": "~2.30.0",
+    "redis": "~0.10.0",
+    "mongoose": "~3.8.4",
+    "iconv-lite": "~0.2.11",
+    "cheerio": "~0.13.1",
+    "jQuery": "~1.7.4",
+    "underscore": "~1.5.2"
+  }
+}
