@@ -42,14 +42,16 @@ function Req( headers ) {
     ];
 
     var defaultHeaders = {
-        'accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+        'accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Connection':'close'
     };
     this.headers = _.extend({} , defaultHeaders, headers);
 
     this.option = {
         'followRedirect' :true,
         'encoding' : null,
-        'timeout' : 20000
+        'timeout' : 20000,
+        'pool': false
     };
 
 }

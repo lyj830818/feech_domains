@@ -14,7 +14,14 @@ var config  = require('./config').aliyun,
     fs = require('fs'),
     urlParser = require('url'),
     crypto = require('crypto'),
-    utils = require('./src/utils.js');
+    utils = require('./src/utils.js'),
+    async = require('async');
+
+
+var q = async.queue(function (url, callback) {
+    console.log('hello ' + url);
+    callback( url );
+}, 1);
 
 var eventEmitter = new events.EventEmitter();
 
@@ -23,7 +30,6 @@ var errorHandler = function( message ){
 }
 
 var domainStream = fs.createWriteStream('./domains.txt' , {flags:'a' , encoding :'utf8'});
-var taskQueue = [];
 
 
 var write2File = function( domain ){
@@ -40,7 +46,7 @@ remoteHash.delMainKey();
 eventEmitter.on('event-error' , errorHandler);
 eventEmitter.addListener('event-new-domain' , write2File);
 eventEmitter.addListener('event-new-domain' , function( domain){
-    taskQueue.push(domain);
+    q.push( domain , crawer.oneurl);
     remoteHash.set(utils.md5(domain) , '1' , function(err , reply){
         if(err){
             eventEmitter.emit('event-error' , 'remotehash set error when domain = ' + domain + ' ' + err);
@@ -108,17 +114,10 @@ crawer.oneurl = function(url){
 
     });
 }
-var nextOneHandler = function(){
-    var url = taskQueue.shift();
-    if(url){
-        crawer.oneurl(url);
-    }
-    setImmediate(nextOneHandler);
-}
+
 
 crawer.start = function(){
     _.each(START_URL, crawer.oneurl);
-    setImmediate(nextOneHandler);
 }
 
 crawer.start();
