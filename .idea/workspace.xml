@@ -29,7 +29,7 @@
       <file leaf-file-name="testReq.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/testReq.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="31" column="21" selection-start="852" selection-end="1008" vertical-scroll-proportion="0.0" vertical-offset="283" max-vertical-offset="1000">
+            <state line="31" column="21" selection-start="852" selection-end="1008" vertical-scroll-proportion="0.0" vertical-offset="589" max-vertical-offset="1000">
               <folding />
             </state>
           </provider>
@@ -38,7 +38,7 @@
       <file leaf-file-name="utils.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/utils.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="5" column="29" selection-start="210" selection-end="210" vertical-scroll-proportion="0.0" vertical-offset="100" max-vertical-offset="780">
+            <state line="5" column="29" selection-start="210" selection-end="210" vertical-scroll-proportion="0.0" vertical-offset="73" max-vertical-offset="780">
               <folding />
             </state>
           </provider>
@@ -47,7 +47,16 @@
       <file leaf-file-name="index.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="85" column="13" selection-start="2324" selection-end="2324" vertical-scroll-proportion="0.0" vertical-offset="1034" max-vertical-offset="2680">
+            <state line="18" column="45" selection-start="0" selection-end="3220" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2700">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="index2.js" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/index2.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="129" column="0" selection-start="3222" selection-end="3222" vertical-scroll-proportion="0.9610951" vertical-offset="1913" max-vertical-offset="2700">
               <folding />
             </state>
           </provider>
@@ -56,25 +65,16 @@
       <file leaf-file-name="package.json" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/package.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="14" column="24" selection-start="356" selection-end="356" vertical-scroll-proportion="0.0" vertical-offset="280" max-vertical-offset="680">
+            <state line="14" column="24" selection-start="356" selection-end="356" vertical-scroll-proportion="0.0" vertical-offset="266" max-vertical-offset="646">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="config.json" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="config.json" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/config.json">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="7" column="19" selection-start="156" selection-end="156" vertical-scroll-proportion="0.32110092" vertical-offset="0" max-vertical-offset="660">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="underscore.js" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/node_modules/underscore/underscore.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="81" column="18" selection-start="2913" selection-end="2913" vertical-scroll-proportion="0.0" vertical-offset="1620" max-vertical-offset="25640">
+            <state line="10" column="19" selection-start="239" selection-end="239" vertical-scroll-proportion="0.0" vertical-offset="190" max-vertical-offset="627">
               <folding />
             </state>
           </provider>
@@ -83,7 +83,7 @@
       <file leaf-file-name="testRemoteHash.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/testRemoteHash.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="20" column="29" selection-start="528" selection-end="549" vertical-scroll-proportion="0.0" vertical-offset="400" max-vertical-offset="1360">
+            <state line="20" column="29" selection-start="528" selection-end="549" vertical-scroll-proportion="0.0" vertical-offset="380" max-vertical-offset="1292">
               <folding />
             </state>
           </provider>
@@ -92,7 +92,7 @@
       <file leaf-file-name="index.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/node_modules/redis/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="1028" column="12" selection-start="36597" selection-end="36597" vertical-scroll-proportion="0.0" vertical-offset="18876" max-vertical-offset="24140">
+            <state line="1028" column="12" selection-start="36597" selection-end="36597" vertical-scroll-proportion="0.0" vertical-offset="19532" max-vertical-offset="22933">
               <folding />
             </state>
           </provider>
@@ -101,7 +101,7 @@
       <file leaf-file-name="Req.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/Req.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="65" column="0" selection-start="5124" selection-end="5124" vertical-scroll-proportion="0.0" vertical-offset="776" max-vertical-offset="1480">
+            <state line="65" column="0" selection-start="5124" selection-end="5124" vertical-scroll-proportion="0.0" vertical-offset="1235" max-vertical-offset="1406">
               <folding />
             </state>
           </provider>
@@ -110,7 +110,7 @@
       <file leaf-file-name="generate_commands.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/node_modules/redis/generate_commands.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="16" column="33" selection-start="515" selection-end="515" vertical-scroll-proportion="0.0" vertical-offset="320" max-vertical-offset="900">
+            <state line="16" column="33" selection-start="515" selection-end="515" vertical-scroll-proportion="0.0" vertical-offset="304" max-vertical-offset="855">
               <folding />
             </state>
           </provider>
@@ -129,7 +129,6 @@
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
-        <option value="$PROJECT_DIR$/config.json" />
         <option value="$PROJECT_DIR$/node_modules/redis/index.js" />
         <option value="$PROJECT_DIR$/test/remoteHash.js" />
         <option value="$PROJECT_DIR$/jshintrc" />
@@ -144,6 +143,8 @@
         <option value="$PROJECT_DIR$/test/testUtils.js" />
         <option value="$PROJECT_DIR$/src/utils.js" />
         <option value="$PROJECT_DIR$/index.js" />
+        <option value="$PROJECT_DIR$/config.json" />
+        <option value="$PROJECT_DIR$/index2.js" />
       </list>
     </option>
   </component>
@@ -208,7 +209,7 @@
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="options.lastSelected" value="project.propVCSSupport.Mappings" />
+    <property name="options.lastSelected" value="reference.settingsdialog.IDE.editor.colors.Font" />
     <property name="recentsLimit" value="5" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../offlineSebug" />
     <property name="restartRequiresConfirmation" value="true" />
@@ -384,14 +385,14 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3916449" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32898173" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32898173" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.UiProperties">
@@ -415,18 +416,9 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/Gruntfile.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="5" selection-start="650" selection-end="650" vertical-scroll-proportion="0.0" vertical-offset="223" max-vertical-offset="940">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/RemoteHash.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="0" selection-start="681" selection-end="681" vertical-scroll-proportion="0.0" vertical-offset="203" max-vertical-offset="920">
-          <folding />
-        </state>
+        <state line="31" column="0" selection-start="681" selection-end="681" vertical-scroll-proportion="0.0" vertical-offset="203" max-vertical-offset="920" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/index.js">
@@ -483,16 +475,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/testUtils.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="114" column="20" selection-start="3856" selection-end="3978" vertical-scroll-proportion="0.0" vertical-offset="2280" max-vertical-offset="2580">
-          <folding />
-        </state>
+        <state line="114" column="20" selection-start="3856" selection-end="3978" vertical-scroll-proportion="0.0" vertical-offset="2280" max-vertical-offset="2580" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/jQuery/lib/node-jquery.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="2" selection-start="631" selection-end="631" vertical-scroll-proportion="0.0" vertical-offset="120" max-vertical-offset="188860">
-          <folding />
-        </state>
+        <state line="19" column="2" selection-start="631" selection-end="631" vertical-scroll-proportion="0.0" vertical-offset="120" max-vertical-offset="188860" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/cheerio/lib/api/traversing.js">
@@ -507,16 +495,12 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Gruntfile.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="10" selection-start="285" selection-end="285" vertical-scroll-proportion="0.0" vertical-offset="440" max-vertical-offset="940">
-          <folding />
-        </state>
+        <state line="10" column="10" selection-start="285" selection-end="285" vertical-scroll-proportion="0.0" vertical-offset="440" max-vertical-offset="940" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/RemoteHash.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="2" selection-start="578" selection-end="578" vertical-scroll-proportion="0.0" vertical-offset="174" max-vertical-offset="920">
-          <folding />
-        </state>
+        <state line="26" column="2" selection-start="578" selection-end="578" vertical-scroll-proportion="0.0" vertical-offset="174" max-vertical-offset="920" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/redis/index.js">
@@ -559,23 +543,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/testUtils.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="24" column="12" selection-start="736" selection-end="736" vertical-scroll-proportion="0.0" vertical-offset="480" max-vertical-offset="860">
-          <folding />
-        </state>
+        <state line="24" column="12" selection-start="736" selection-end="736" vertical-scroll-proportion="0.0" vertical-offset="480" max-vertical-offset="860" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Gruntfile.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="10" column="10" selection-start="285" selection-end="285" vertical-scroll-proportion="0.0" vertical-offset="200" max-vertical-offset="940">
-          <folding />
-        </state>
+        <state line="10" column="10" selection-start="285" selection-end="285" vertical-scroll-proportion="0.0" vertical-offset="200" max-vertical-offset="940" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/RemoteHash.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="2" selection-start="578" selection-end="578" vertical-scroll-proportion="0.0" vertical-offset="174" max-vertical-offset="920">
-          <folding />
-        </state>
+        <state line="26" column="2" selection-start="578" selection-end="578" vertical-scroll-proportion="0.0" vertical-offset="174" max-vertical-offset="920" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/redis/index.js">
@@ -594,9 +572,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/RemoteHash.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="26" column="2" selection-start="578" selection-end="578" vertical-scroll-proportion="0.0" vertical-offset="174" max-vertical-offset="920">
-          <folding />
-        </state>
+        <state line="26" column="2" selection-start="578" selection-end="578" vertical-scroll-proportion="0.0" vertical-offset="174" max-vertical-offset="920" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/redis/index.js">
@@ -647,9 +623,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/jQuery/lib/node-jquery.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="2" selection-start="631" selection-end="631" vertical-scroll-proportion="0.0" vertical-offset="120" max-vertical-offset="188860">
-          <folding />
-        </state>
+        <state line="19" column="2" selection-start="631" selection-end="631" vertical-scroll-proportion="0.0" vertical-offset="120" max-vertical-offset="188860" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/jQuery/package.json">
@@ -680,9 +654,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/RemoteHash.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="31" column="0" selection-start="681" selection-end="681" vertical-scroll-proportion="0.0" vertical-offset="203" max-vertical-offset="920">
-          <folding />
-        </state>
+        <state line="31" column="0" selection-start="681" selection-end="681" vertical-scroll-proportion="0.0" vertical-offset="203" max-vertical-offset="920" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/iconv-lite/index.js">
@@ -692,21 +664,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/testUtils.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="46" column="29" selection-start="1368" selection-end="1368" vertical-scroll-proportion="0.48295453" vertical-offset="580" max-vertical-offset="2980">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/utils.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="5" column="29" selection-start="210" selection-end="210" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="780">
-          <folding />
-        </state>
+        <state line="46" column="29" selection-start="1368" selection-end="1368" vertical-scroll-proportion="0.48295453" vertical-offset="580" max-vertical-offset="2980" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Gruntfile.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="33" column="5" selection-start="650" selection-end="650" vertical-scroll-proportion="0.0" vertical-offset="223" max-vertical-offset="940">
+        <state line="33" column="5" selection-start="650" selection-end="650" vertical-scroll-proportion="0.0" vertical-offset="223" max-vertical-offset="940" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/package.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="14" column="24" selection-start="356" selection-end="356" vertical-scroll-proportion="0.0" vertical-offset="280" max-vertical-offset="680">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="10" column="19" selection-start="239" selection-end="239" vertical-scroll-proportion="0.0" vertical-offset="190" max-vertical-offset="627">
           <folding />
         </state>
       </provider>
@@ -714,6 +689,13 @@
     <entry file="file://$PROJECT_DIR$/test/testRemoteHash.js">
       <provider selected="true" editor-type-id="text-editor">
         <state line="20" column="29" selection-start="528" selection-end="549" vertical-scroll-proportion="0.0" vertical-offset="60" max-vertical-offset="1360">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/utils.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="5" column="29" selection-start="210" selection-end="210" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="780">
           <folding />
         </state>
       </provider>
@@ -727,21 +709,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="85" column="13" selection-start="2324" selection-end="2324" vertical-scroll-proportion="0.0" vertical-offset="1034" max-vertical-offset="2680">
+        <state line="18" column="45" selection-start="0" selection-end="3220" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2700">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
+    <entry file="file://$PROJECT_DIR$/index2.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="14" column="24" selection-start="356" selection-end="356" vertical-scroll-proportion="0.0" vertical-offset="280" max-vertical-offset="680">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/config.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="7" column="19" selection-start="156" selection-end="156" vertical-scroll-proportion="0.32110092" vertical-offset="0" max-vertical-offset="660">
+        <state line="129" column="0" selection-start="3222" selection-end="3222" vertical-scroll-proportion="0.9610951" vertical-offset="1913" max-vertical-offset="2700">
           <folding />
         </state>
       </provider>
