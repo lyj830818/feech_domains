@@ -23,6 +23,8 @@
     "iconv-lite": "~0.2.11",
     "cheerio": "~0.13.1",
     "jQuery": "~1.7.4",
-    "underscore": "~1.5.2"
+    "underscore": "~1.5.2",
+    "async": "~0.2.9",
+    "bagpipe": "~0.3.5"
   }
 }
