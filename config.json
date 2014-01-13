@@ -5,15 +5,6 @@
             "host": "42.96.172.233",
             "port": "58302"
         },
-        "server": {
-            "scheme": "http",
-            "host": "localhost",
-            "port": 81
-        },
-        "db": {
-            "driver": "sqlite3",
-            "database": "./result/sebug.db"
-        },
         "pdf": "./result/asset/",
         "static": {
             "/js": "/asset/js/",
@@ -23,5 +14,18 @@
     },
     "development": {
         "log_level": 1
+    },
+    "am": {
+        "log_level": 0,
+        "redis": {
+            "host": "127.0.0.1",
+            "port": "58302"
+        },
+        "pdf": "./result/asset/",
+        "static": {
+            "/js": "/asset/js/",
+            "/css": "/asset/css/",
+            "/img": "/asset/img/"
+        }
     }
 }

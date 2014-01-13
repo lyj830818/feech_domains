@@ -3,7 +3,7 @@
  tessssssss
  * Created by Administrator on 14-1-8.
  */
-var config  = require('./config').aliyun,
+var config  = require('./config').am,
     redis = require('redis'),
     rHash = require('./src/RemoteHash'),
     req = require('./src/Req'),
