@@ -82,7 +82,7 @@ crawer.oneurl = function(task , cb ){
             task.retry += 1;
             if(task.retry < RETRY_TIMES){
                 task.timeout *= 2;
-                bagpipe.push( crawer.oneurl, task, function(){} );
+                bagpipe.push(  task );
                 console.log('retry task' + task.url);
             }
             return;
