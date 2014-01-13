@@ -57,7 +57,9 @@ function Req( headers ) {
 }
 exports.Req = Req;
 
-Req.prototype.get = function (url , cb){
+Req.prototype.get = function (url , option,  cb){
+    this.option = _.extend(this.option , option);
+
     if(!this.headers['user-agent']){
         this.headers['user-agent'] = this.userAgents[_.random( 0 , this.userAgents.length)];
     }
