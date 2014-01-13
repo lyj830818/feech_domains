@@ -53,7 +53,7 @@ var RedisBagpipe = function (redis , taskQueueKey , method, callback, limit, opt
 util.inherits(RedisBagpipe, events.EventEmitter);
 
 RedisBagpipe.prototype.clear = function(){
-    this.redis.del(this.mainKey , function(){});
+    this.redis.del(this.taskQueueKey , function(){});
 }
 
 /**
@@ -61,14 +61,11 @@ RedisBagpipe.prototype.clear = function(){
  * @param {Function} method 异步方法
  * @param {Mix} args 参数列表，最后一个参数为回调函数。
  */
-RedisBagpipe.prototype.push = function (method) {
+RedisBagpipe.prototype.push = function () {
     var that = this;
-    var args = [].slice.call(arguments, 1);
-
-    //弹出最后一个callback
-    args.pop();
 
     // 队列长度也超过限制值时
+    var args = [].slice.call(arguments, 0)
     this.redis.rpush(this.taskQueueKey , JSON.stringify(args), function(err ,replies){
         if(err){
             console.dir('rpush error' +args.toString() +  err);
@@ -94,7 +91,7 @@ RedisBagpipe.prototype.next = function () {
     if (that.active < that.limit ) {
 
         that.redis.lpop(that.taskQueueKey, function(err , replies){
-            if(err){
+            if(err || replies === null){
                 console.dir('rpush error' +  err);
                 setTimeout(that.next , 1000);
                 return;
@@ -124,6 +121,7 @@ RedisBagpipe.prototype.run = function (method, args) {
     var timer = null;
     var called = false;
 
+    //console.dir(args);
     // inject logic
     args.push( function (err) {
 

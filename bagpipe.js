@@ -19,9 +19,7 @@ var config  = require('./config').aliyun,
 
 
 
-bagpipe.on('full' , function(length){
-    console.log('队列拥堵，目前长度为' + length);
-});
+
 
 var eventEmitter = new events.EventEmitter();
 
@@ -41,14 +39,14 @@ var write2File = function( domain ){
 var redisClient = redis.createClient(config.redis.port , config.redis.host);
 var remoteHash = new rHash.RemoteHash(redisClient , {'serverType' : 'redis','mainKey' : 'hashkeys'});
 
-var bagpipe = new RedisBagpipe(redisClient, 'task_queue_key' , 100);
+
 
 remoteHash.delMainKey();
 
 eventEmitter.on('event-error' , errorHandler);
 eventEmitter.addListener('event-new-domain' , write2File);
 eventEmitter.addListener('event-new-domain' , function( domain){
-    bagpipe.push( crawer.oneurl, {url : domain , retry : 0 , timeout : 15000} , function(){} );
+    bagpipe.push(  {url : domain , retry : 0 , timeout : 15000} );
     remoteHash.set(utils.md5(domain) , '1' , function(err , reply){
         if(err){
             eventEmitter.emit('event-error' , 'remotehash set error when domain = ' + domain + ' ' + err);
@@ -74,8 +72,8 @@ var R = new req.Req();
 var RETRY_TIMES = 2;
 crawer.oneurl = function(task , cb ){
 
-    console.log(task.url);
-    console.log(task.timeout);
+    //console.log(task.url);
+    //console.log(task.timeout);
 
     R.get(task.url, {timeout : task.timeout} ,function(err ,response, body){
         cb();
@@ -131,9 +129,16 @@ crawer.oneurl = function(task , cb ){
 
 crawer.start = function(){
     _.each(START_TASK, function( task){
-        bagpipe.push( crawer.oneurl, task, function(){} );
+        bagpipe.push( task );
     });
 }
+
+var bagpipe = new RedisBagpipe(redisClient, 'task_queue_key' , crawer.oneurl, function(){}, 4);
+bagpipe.clear();
+
+bagpipe.on('full' , function(length){
+    console.log('队列拥堵，目前长度为' + length);
+});
 
 crawer.start();
 
