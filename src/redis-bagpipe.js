@@ -23,37 +23,42 @@ var events = require("events");
  * @param {Number} limit 并发数限制值
  * @param {Object} options Options
  */
-var RedisBagpipe = function (redis , taskQueueKey , method, callback, limit, options) {
-    events.EventEmitter.call(this);
-    this.redis = redis;
-    this.taskQueueKey = taskQueueKey;
-    this.limit = limit;
-    this.method = method;
-    this.callback = callback;
-    this.active = 0;
-    this.queue = [];
-    this.queueLength = 0;
-    this.options = {
-        disabled: false,
-        timeout: null
-    };
-    if (typeof options === 'boolean') {
-        options = {
-            disabled: options
-        };
-    }
-    options = options || {};
-    for (var key in this.options) {
-        if (options.hasOwnProperty(key)) {
-            this.options[key] = options[key];
-        }
-    }
+var RedisBagpipe = function (redis, taskQueueKey, method, callback, limit, options) {
+	events.EventEmitter.call(this);
+	this.redis = redis;
+	this.taskQueueKey = taskQueueKey;
+	this.limit = limit;
+	this.method = method;
+	this.callback = callback;
+	this.active = 0;
+	this.queue = [];
+
+	//队列长度
+	this.queueLength = 0;
+	//队列最大长度，redis应该是无限的，为防止内存占用过大，设一个小点值
+	this.maxLength = 10 * 1000 * 1000; // 10M * sizeof(item)
+	this.options = {
+		disabled: false,
+		timeout: null
+	};
+	if (typeof options === 'boolean') {
+		options = {
+			disabled: options
+		};
+	}
+	options = options || {};
+	for (var key in this.options) {
+		if (options.hasOwnProperty(key)) {
+			this.options[key] = options[key];
+		}
+	}
 };
 
 util.inherits(RedisBagpipe, events.EventEmitter);
 
-RedisBagpipe.prototype.clear = function(){
-    this.redis.del(this.taskQueueKey , function(){});
+RedisBagpipe.prototype.clear = function () {
+	this.redis.del(this.taskQueueKey, function () {
+	});
 }
 
 /**
@@ -62,24 +67,24 @@ RedisBagpipe.prototype.clear = function(){
  * @param {Mix} args 参数列表，最后一个参数为回调函数。
  */
 RedisBagpipe.prototype.push = function () {
-    var that = this;
+	var that = this;
 
-    // 队列长度也超过限制值时
-    var args = [].slice.call(arguments, 0)
-    this.redis.rpush(this.taskQueueKey , JSON.stringify(args), function(err ,replies){
-        if(err){
-            console.dir('rpush error' +args.toString() +  err);
-            return;
-        }
-        that.queueLength += 1;
-        if (that.queueLength > 1) {
-            that.emit('full', that.queueLength);
-        }
-        that.next();
+	// 队列长度也超过限制值时
+	var args = [].slice.call(arguments, 0)
+	this.redis.rpush(this.taskQueueKey, JSON.stringify(args), function (err, replies) {
+		if (err) {
+			console.dir('rpush error' + args.toString() + err);
+			return;
+		}
+		that.queueLength += 1;
+		if (that.queueLength > that.maxlength) {
+			that.emit('full', that.queueLength);
+		}
+		that.next();
 
-    });
+	});
 
-    return this;
+	return this;
 
 };
 
@@ -87,57 +92,50 @@ RedisBagpipe.prototype.push = function () {
  * 继续执行队列中的后续动作
  */
 RedisBagpipe.prototype.next = function () {
-    var that = this;
-    if (that.active < that.limit ) {
+	var that = this;
+	if (that.active < that.limit) {
 
-        that.redis.lpop(that.taskQueueKey, function(err , replies){
-            if(err || replies === null){
-                console.dir('rpush error' +  err);
-                setTimeout(that.next , 1000);
-                return;
-            }
-            that.queueLength -= 1;
+		that.redis.lpop(that.taskQueueKey, function (err, replies) {
+			if (err || replies === null) {
+				console.dir('rpush error' + err);
+				setTimeout(that.next, 1000);
+				return;
+			}
+			that.queueLength -= 1;
 
-            var args = JSON.parse(replies);
-            that.run(that.method, args);
+			var args = JSON.parse(replies);
+			that.run(that.method, args);
 
-        });
+		});
 
-    }
+	}
 };
 
 RedisBagpipe.prototype._next = function () {
-    this.active--;
-    this.next();
+	this.active--;
+	this.next();
 };
 
 /*!
  * 执行队列中的方法
+ * @param {Function} method : 要执行的方法(crawler.oneurl)
+ * @param {Object} args : 执行参数(入队的task 对象)
  */
 RedisBagpipe.prototype.run = function (method, args) {
-    var that = this;
-    that.active++;
+	var that = this;
+	that.active++;
 
-    var timer = null;
-    var called = false;
+	//console.dir(args);
+	// inject logic
 
-    //console.dir(args);
-    // inject logic
-    args.push( function (err) {
+	args.push(function (err) {
 
-        // if timeout, don't execute
-        if (!called) {
-            that._next();
-            that.callback.apply(null, arguments);
-        } else {
-            // pass the outdated error
-            if (err) {
-                that.emit('outdated', err);
-            }
-        }
-    });
+		that._next();
+		that.callback.apply(null, arguments);
 
-    method.apply(null, args);
+	});
+
+	method.apply(null, args);
 };
 
 module.exports = RedisBagpipe;
