@@ -133,15 +133,17 @@ crawer.start = function(){
     });
 }
 
-var bagpipe = new RedisBagpipe(redisClient, 'task_queue_key' , crawer.oneurl, function(){}, 4);
+var bagpipe = new RedisBagpipe(redisClient, 'task_queue_key' , crawer.oneurl, function(){}, 10);
 bagpipe.clear();
 
 bagpipe.on('full' , function(length){
-    console.log('队列拥堵，目前长度为' + length);
+
+    if(length % 100 === 0){
+        console.log('xxxxxxxxxxxxx，目前长度为' + length);
+    }
 });
 
-crawer.start();
-
+setTimeout(crawer.start, 3000);
 
 
 
