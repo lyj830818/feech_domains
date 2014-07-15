@@ -71,7 +71,7 @@ RedisBagpipe.prototype.push = function () {
 		}
 		//设置一个使物理队列不会满的maxlength
 		that.queueLength++;
-		if (that.queueLength > that.maxlength) {
+		if (that.queueLength > that.maxLength) {
 			that.emit('full', that.queueLength);
 		}
 
