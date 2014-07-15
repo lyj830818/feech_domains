@@ -133,8 +133,8 @@ crawler.start = function () {
 
 	_.each(START_TASK, function (task) {
 		bagpipe.push(task);
-		bagpipe.observer();
 	});
+	bagpipe.observer();
 }
 
 var bagpipe = new RedisBagpipe(redisClient, 'task_queue_key',
@@ -145,12 +145,14 @@ bagpipe.clear();
 bagpipe.on('full', function (length) {
 
 	console.log('xxxxxxxxxxxxx，目前长度为' + length);
+	process.exit();
 
 });
 
 //http://www.rainweb.cn/article/355.html
 process.on('uncaughtException', function(err){
 	console.log('Caught exception:' + err);
+
 });
 
 setTimeout(crawler.start, 3000);

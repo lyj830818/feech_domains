@@ -10,7 +10,6 @@ var events = require("events");
  * ```
  * var bagpipe = new RedisBagpipe(100);
  * bagpipe.push(fs.readFile, 'path', 'utf-8', function (err, data) {
- *   // TODO
  * });
  * ```
  * Events:
@@ -36,6 +35,7 @@ var RedisBagpipe = function (redis, taskQueueKey, method, callback, limit, optio
 
 	//队列最大长度，redis应该是无限的，为防止内存占用过大，设一个小点值
 	this.maxLength = 10 * 1000 * 1000; // 10M * sizeof(item)
+	this.maxLength = 1 * 1000;
 	this.isFull = false;
 	this.options = {
 		disabled: false,
@@ -59,8 +59,9 @@ util.inherits(RedisBagpipe, events.EventEmitter);
 
 RedisBagpipe.prototype.getLen = function(){
 	//队列长度
+	var that = this;
 	this.redis.llen(this.taskQueueKey, function(err , reply){
-		this.queueLength = reply;
+		that.queueLength = reply;
 	})
 }
 
@@ -101,14 +102,16 @@ RedisBagpipe.prototype.push = function () {
  */
 RedisBagpipe.prototype.next = function () {
 	var that = this;
+	that.queueLength--;
 	that.redis.lpop(that.taskQueueKey, function (err, replies) {
 		//replies == null 时说明队列为空
 		if (err || replies === null) {
+			//对提前加上或减去的数值进行修正
 			that.activePrePop--;
+			that.queueLength++;
 			console.dir('rpop error' + err);
 			return;
 		}
-		that.queueLength--;
 
 		var args = JSON.parse(replies);
 
@@ -131,6 +134,10 @@ RedisBagpipe.prototype.observer = function(){
 		console.log('pre pop active:' + that.activePrePop);
 		console.log('post pop active:' + that.activePostPop);
 
+		while(that.activePrePop < that.limit && that.queueLength > 0){
+			that.activePrePop++;
+			that.next();
+		}
 		that.observer();
 	} , 1000);
 
