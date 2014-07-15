@@ -2,7 +2,7 @@
  tessssssss
  * Created by Administrator on 14-1-8.
  */
-var config = require('./config').am,
+var config = require('./config').vbox,
 	redis = require('redis'),
 	rHash = require('./src/RemoteHash'),
 	req = require('./src/Req'),
@@ -14,7 +14,7 @@ var config = require('./config').am,
 	urlParser = require('url'),
 	crypto = require('crypto'),
 	utils = require('./src/utils.js'),
-	RedisBagpipe = require('./src/redis-bagpipe');
+	RedisBagpipe = require('./src/observer-redis-bagpipe');
 
 
 var eventEmitter = new events.EventEmitter();
@@ -69,8 +69,11 @@ crawler.oneurl = function (task, cb) {
 	//console.log(task.url);
 	//console.log(task.timeout);
 
+
 	R.get(task.url, {timeout: task.timeout}, function (err, response, body) {
-		cb();
+
+		cb();//网络请求结束，调用下一个task
+
 		if (err) {
 			eventEmitter.emit('event-error', 'error get ' + task.url + ' ' + err);
 			task.retry += 1;
@@ -83,6 +86,9 @@ crawler.oneurl = function (task, cb) {
 		}
 
 		if (response.statusCode === 200) {
+			//统一按utf-8解码
+			//todo:根据response header的 " Content-Type:text/html;charset=utf-8"
+			//todo: 以及<meta http-equiv="content-type" content="text/html;charset=utf-8">解码
 			body = iconvLite.decode(body, 'utf8');
 			var $ = cheerio.load(body);
 			var domains = [];
@@ -118,24 +124,33 @@ crawler.oneurl = function (task, cb) {
 
 		}
 	});
+
 }
 
 
 crawler.start = function () {
+	bagpipe.getLen();
+
 	_.each(START_TASK, function (task) {
 		bagpipe.push(task);
+		bagpipe.observer();
 	});
 }
 
-var bagpipe = new RedisBagpipe(redisClient, 'task_queue_key', crawler.oneurl, function () {
-}, 10);
+var bagpipe = new RedisBagpipe(redisClient, 'task_queue_key',
+	crawler.oneurl, function () {
+	}, 10);
 bagpipe.clear();
 
 bagpipe.on('full', function (length) {
 
-	if (length % 100 === 0) {
-		console.log('xxxxxxxxxxxxx，目前长度为' + length);
-	}
+	console.log('xxxxxxxxxxxxx，目前长度为' + length);
+
+});
+
+//http://www.rainweb.cn/article/355.html
+process.on('uncaughtException', function(err){
+	console.log('Caught exception:' + err);
 });
 
 setTimeout(crawler.start, 3000);

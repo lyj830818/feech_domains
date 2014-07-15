@@ -34,10 +34,9 @@ var RedisBagpipe = function (redis, taskQueueKey, method, callback, limit, optio
 	this.activePostPop = 0;
 	this.queue = [];
 
-	//队列长度
-	this.queueLength = 0;
 	//队列最大长度，redis应该是无限的，为防止内存占用过大，设一个小点值
 	this.maxLength = 10 * 1000 * 1000; // 10M * sizeof(item)
+	this.isFull = false;
 	this.options = {
 		disabled: false,
 		timeout: null
@@ -56,6 +55,14 @@ var RedisBagpipe = function (redis, taskQueueKey, method, callback, limit, optio
 };
 
 util.inherits(RedisBagpipe, events.EventEmitter);
+
+
+RedisBagpipe.prototype.getLen = function(){
+	//队列长度
+	this.redis.llen(this.taskQueueKey, function(err , reply){
+		this.queueLength = reply;
+	})
+}
 
 RedisBagpipe.prototype.clear = function () {
 	this.redis.del(this.taskQueueKey, function () {
@@ -77,11 +84,11 @@ RedisBagpipe.prototype.push = function () {
 			console.dir('rpush error' + args.toString() + err);
 			return;
 		}
-		that.queueLength += 1;
+		//设置一个使物理队列不会满的maxlength
+		that.queueLength++;
 		if (that.queueLength > that.maxlength) {
 			that.emit('full', that.queueLength);
 		}
-		that.next();
 
 	});
 
@@ -90,36 +97,31 @@ RedisBagpipe.prototype.push = function () {
 };
 
 /*!
- * 继续执行队列中的后续动作
+ * 从队列中pop一个
  */
 RedisBagpipe.prototype.next = function () {
 	var that = this;
-	if (that.activePrePop < that.limit) {
+	that.redis.lpop(that.taskQueueKey, function (err, replies) {
+		//replies == null 时说明队列为空
+		if (err || replies === null) {
+			that.activePrePop--;
+			console.dir('rpop error' + err);
+			return;
+		}
+		that.queueLength--;
 
-		that.activePrePop++;
+		var args = JSON.parse(replies);
 
-		that.redis.lpop(that.taskQueueKey, function (err, replies) {
-			if (err || replies === null) {
-				console.dir('rpush error' + err);
-				setTimeout(that.next, 1000);
-				return;
-			}
-			that.queueLength -= 1;
+		that.activePostPop++;
+		that.run(that.method, args);
 
-			var args = JSON.parse(replies);
+	});
 
-			that.activePostPop++;
-			that.run(that.method, args);
-
-		});
-
-	}
 };
 
-RedisBagpipe.prototype._next = function () {
+RedisBagpipe.prototype._finish = function () {
 	this.activePrePop--;
 	this.activePostPop--;
-	this.next();
 };
 
 RedisBagpipe.prototype.observer = function(){
@@ -128,6 +130,7 @@ RedisBagpipe.prototype.observer = function(){
 		console.log("-------------------------------------");
 		console.log('pre pop active:' + that.activePrePop);
 		console.log('post pop active:' + that.activePostPop);
+
 		that.observer();
 	} , 1000);
 
@@ -141,11 +144,11 @@ RedisBagpipe.prototype.observer = function(){
 RedisBagpipe.prototype.run = function (method, args) {
 	var that = this;
 
-	//这是method方法中的异步调用完成后调用的方法，用来通知队列进行_next()
+	//这是method方法中的异步调用完成后调用的方法，用来通知队列进行_finish()
 	args.push(function (err) {
 
 		that.callback.apply(null, arguments);
-		that._next();
+		that._finish();
 
 	});
 
