@@ -36,22 +36,6 @@ var RedisBagpipe = function (redis, taskQueueKey, method, callback, limit, optio
 	//队列最大长度，redis应该是无限的，为防止内存占用过大，设一个小点值
 	this.maxLength = 10 * 1000 * 1000; // 10M * sizeof(item)
 	this.maxLength = 1 * 1000;
-	this.isFull = false;
-	this.options = {
-		disabled: false,
-		timeout: null
-	};
-	if (typeof options === 'boolean') {
-		options = {
-			disabled: options
-		};
-	}
-	options = options || {};
-	for (var key in this.options) {
-		if (options.hasOwnProperty(key)) {
-			this.options[key] = options[key];
-		}
-	}
 };
 
 util.inherits(RedisBagpipe, events.EventEmitter);

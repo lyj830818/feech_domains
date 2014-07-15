@@ -140,7 +140,8 @@ crawler.start = function () {
 var bagpipe = new RedisBagpipe(redisClient, 'task_queue_key',
 	crawler.oneurl, function () {
 	}, 10);
-bagpipe.clear();
+
+bagpipe.clear();//是否从头开始爬
 
 bagpipe.on('full', function (length) {
 
