@@ -4,6 +4,7 @@
 
 var _ = require('underscore'),
 	request = require('request');
+var http = require('http');
 
 function Req(headers) {
 
@@ -46,12 +47,12 @@ function Req(headers) {
 		'Connection': 'close'
 	};
 	this.headers = _.extend({}, defaultHeaders, headers);
-
+	var pool = new http.Agent({'maxSockets': Infinity});
 	this.option = {
 		'followRedirect': true,
 		'encoding': null,
 		'timeout': 20000,
-		'pool': false
+		'pool': pool
 	};
 
 }
