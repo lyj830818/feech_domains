@@ -14,8 +14,8 @@ describe('Utils', function () {
 
 //    before(function( done ){
 //        redisClient = redis.createClient(config.redis.port , config.redis.host);
-//        remoteHash = new rHash.RemoteHash(redisClient , {'serverType' : 'redis','mainKey' : 'aaa'});
-//        remoteHash.delMainKey(done);
+//        domainSetRedis = new rHash.RemoteHash(redisClient , {'serverType' : 'redis','mainKey' : 'aaa'});
+//        domainSetRedis.delMainKey(done);
 //
 //    });
 

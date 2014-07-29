@@ -91,7 +91,7 @@ crawer.oneurl = function (url) {
 			_.each(domains, function (domain) {
 				remoteHash.exist(utils.md5(domain), function (err, reply) {
 					if (err) {
-						eventEmitter.emit('event-error', 'remoteHash exist error when test ' + domain + ' ' + err);
+						eventEmitter.emit('event-error', 'domainSetRedis exist error when test ' + domain + ' ' + err);
 						return;
 					}
 
