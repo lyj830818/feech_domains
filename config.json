@@ -5,12 +5,12 @@
 			"host": "42.96.172.233",
 			"port": "58302"
 		},
-		"pdf": "./result/asset/",
-		"static": {
-			"/js": "/asset/js/",
-			"/css": "/asset/css/",
-			"/img": "/asset/img/"
+
+    "ssdb": {
+			"host": "42.96.172.233",
+			"port": "58303"
 		}
+		
 	},
 	"development": {
 		"log_level": 1
@@ -34,10 +34,9 @@
 			"host": "192.168.100.98",
 			"port": "6379"
 		},
-		"static": {
-			"/js": "/asset/js/",
-			"/css": "/asset/css/",
-			"/img": "/asset/img/"
+    "ssdb": {
+			"host": "42.96.172.233",
+			"port": "58303"
 		}
 	}
 

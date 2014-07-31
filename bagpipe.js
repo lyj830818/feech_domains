@@ -3,8 +3,9 @@
  * Created by Administrator on 14-1-8.
  */
 
-var config = require('./config').aliyun,
+var config = require('./config').vbox,
 	redis = require('redis'),
+  SSDB = require('./src/SSDB.js'),
 	rHash = require('./src/RemoteHash'),
 	req = require('./src/Req'),
 	_ = require('underscore'),
@@ -37,18 +38,27 @@ var errorHandler = function (message) {
 	logger.error(message);
 }
 
-var domainStream = fs.createWriteStream('./domains.txt', {flags: 'a', encoding: 'utf8'});
-var overFlowUrls = fs.createWriteStream('./overflow-urls.txt', {flags: 'a', encoding: 'utf8'});
+//var domainStream = fs.createWriteStream('./domains.txt', {flags: 'a', encoding: 'utf8'});
+//var overFlowUrls = fs.createWriteStream('./overflow-urls.txt', {flags: 'a', encoding: 'utf8'});
 
 
 
 var write2File = function (domain) {
 	//logger.debug(domain);
-	domainStream.write(domain + '\n');
+	//var success = domainStream.write(domain + '\n');
+  //console.dir('write success:' + success);
+  ssdbClient.qpush('domains' , domain , function(err , reply){
+    if(err){
+      eventEmitter.emit('event-error', 'push error domain = ' + domain + ' ' + err);
+    }
+  });
 }
 
 
 var redisClient = redis.createClient(config.redis.port, config.redis.host);
+
+var ssdbClient = SSDB.connect( config.ssdb.host,config.ssdb.port, function(err){});
+
 //记录每个域名爬过的页面数
 var domainSetRedis = new rHash.RemoteHash(redisClient, {'serverType': 'redis', 'mainKey': 'domainSetkeys'});
 //url 去重 set
@@ -283,7 +293,15 @@ var bagpipe = new RedisBagpipe(redisClient, 'task_queue_key',
 bagpipe.on('full', function (length, url) {
 
 	logger.debug('xxxxxxxxxxxxx，目前长度为' + length);
-	domainStream.write(url + '\n');
+  console.dir("full url:" + url);
+	//var success = overFlowUrls.write(url + '\n');
+  ssdbClient.qpush('overflow-urls',url, function(err, reply){
+    if(err){
+      eventEmitter.emit('event-error', 'push error overflow-url = ' + url + ' ' + err);
+    }
+    
+  });
+  //console.dir('write success:' +  success);
 
 	//process.exit();
 
@@ -295,10 +313,21 @@ process.on('uncaughtException', function(err){
 
 });
 
+process.on('exit', function () {
+  //domainStream.end();
+  console.log('Bye.');
+});
+
+process.on('SIGINT', function() {
+  console.log("Caught interrupt signal");
+  process.exit();
+});
+
+
 function clearAll(){
 	START_TASK = [
 		//{url: 'http://www.hao123.com', retry: 0, timeout: 15000}
-	//	{url: 'http://www.hao123.com'}
+		{url: 'http://www.hao123.com'}
 	];
 
 //清空两个set
@@ -307,7 +336,7 @@ function clearAll(){
 	bagpipe.clear();//是否从头开始爬
 }
 
-//clearAll();
+clearAll();
 
 setTimeout(crawler.start, 3000);
 

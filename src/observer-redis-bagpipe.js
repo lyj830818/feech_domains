@@ -35,7 +35,7 @@ var RedisBagpipe = function (redis, taskQueueKey, method, callback, limit, optio
 
 	//队列最大长度，redis应该是无限的，为防止内存占用过大，设一个小点值
 	//this.maxLength = 20 * 1000 * 1000; // 10M * sizeof(item)
-	this.maxLength = 1 * 100;
+	this.maxLength = 1 * 10;
 };
 
 util.inherits(RedisBagpipe, events.EventEmitter);
@@ -64,16 +64,18 @@ RedisBagpipe.prototype.push = function () {
 
 	// 队列长度也超过限制值时
 	var args = [].slice.call(arguments, 0)
+  if(that.queueLength > that.maxLength){
+			that.emit('full', that.queueLength, args[0].url);
+      return this;
+  }
+
 	this.redis.rpush(this.taskQueueKey, JSON.stringify(args), function (err, replies) {
 		if (err) {
 			console.dir('rpush error' + args.toString() + err);
 			return;
 		}
-		//设置一个使物理队列不会满的maxlength
+
 		that.queueLength++;
-		if (that.queueLength > that.maxLength) {
-			that.emit('full', that.queueLength, args.url);
-		}
 
 	});
 
