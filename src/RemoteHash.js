@@ -26,6 +26,10 @@ RemoteHash.prototype.set = function (key, value, cb) {
 	this.server.hset(this.mainKey, key, value, cb);
 };
 
+RemoteHash.prototype.inc = function (key, cb) {
+	this.server.hincrby(this.mainKey, key, 1 , cb);
+};
+
 RemoteHash.prototype.exist = function (key, cb) {
 	this.server.hexists(this.mainKey, key, cb);
 };

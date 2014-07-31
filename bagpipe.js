@@ -15,7 +15,8 @@ var config = require('./config').vbox,
 	urlParser = require('url'),
 	crypto = require('crypto'),
 	utils = require('./src/utils.js'),
-	RedisBagpipe = require('./src/observer-redis-bagpipe');
+	RedisBagpipe = require('./src/observer-redis-bagpipe'),
+	parseDomain = require("parse-domain");
 
 
 var eventEmitter = new events.EventEmitter();
@@ -34,26 +35,35 @@ var write2File = function (domain) {
 
 
 var redisClient = redis.createClient(config.redis.port, config.redis.host);
+//记录每个域名爬过的页面数
 var domainSetRedis = new rHash.RemoteHash(redisClient, {'serverType': 'redis', 'mainKey': 'domainSetkeys'});
 //url 去重 set
 var urlSetRedis = new rHash.RemoteHash(redisClient, {'serverType': 'redis', 'mainKey': 'urlSetkeys'});
 
-//清空两个set
-//domainSetRedis.delMainKey();
-//urlSetRedis.delMainKey();
+
 
 eventEmitter.on('event-error', errorHandler);
 //在文件中记录新域名
 eventEmitter.addListener('event-new-domain', write2File);
 
 //将新域名放到去重队列中
-eventEmitter.addListener('event-new-domain', function (domain) {
+eventEmitter.addListener('event-new-domain', function (domain ) {
 	//只根据url爬行，不额外添加域名
 	//bagpipe.push({url: domain, retry: 0, timeout: 15000});
 	//bagpipe.push({url: domain});
-	domainSetRedis.set(utils.md5(domain), '1', function (err, reply) {
+	//time -> 队列中该域名下url的数量
+
+	domainSetRedis.set(utils.md5(domain), 1, function (err, reply) {
 		if (err) {
 			eventEmitter.emit('event-error', 'domainSetRedis set error when domain = ' + domain + ' ' + err);
+		}
+	});
+});
+
+eventEmitter.addListener('event-inc-domain-url', function(domain){
+	domainSetRedis.inc(utils.md5(domain), function (err, reply) {
+		if (err) {
+			eventEmitter.emit('event-error', 'domainSetRedis inc error when domain = ' + domain + ' ' + err);
 		}
 	});
 });
@@ -69,16 +79,9 @@ eventEmitter.addListener('event-new-url' , function(url){
 	});
 });
 
+var MAX_URL_PER_DOMAIN = 10;
 
-var START_TASK = [
-	//{url: 'http://www.hao123.com', retry: 0, timeout: 15000}
-	//{url: 'http://www.hao123.com'}
-//    'http://calistar.cn/timeout.php',
-//    'http://calistar.cn/timeout2.php',
-//    'http://calistar.cn/timeout3.php',
-//    'http://calistar.cn/timeout4.php'
 
-];
 
 
 var crawler = {};
@@ -114,7 +117,6 @@ crawler.oneurl = function (task, cb) {
 			//todo: 以及<meta http-equiv="content-type" content="text/html;charset=utf-8">解码
 			body = iconvLite.decode(body, 'utf8');
 			var $ = cheerio.load(body);
-			var domains = [];
 			var hrefs = [];
 
 
@@ -148,55 +150,75 @@ crawler.oneurl = function (task, cb) {
           hrefs.push(href)
         }
 
-				var domain = res.host;
 
-				if (domain) {
-					domain = res.protocol + '//' + domain;
-					if (res.port) {
-						domain = domain + ':' + res.port;
-					}
-					domains.push(domain);
-				}
 			});
 			//end 提取
 
 			//start 去重
 			hrefs = _.uniq( hrefs);
       console.dir(hrefs)
-			domains = _.uniq(domains);
 			//end 去重
+      //
+      //
+
+      var rootDomainHash = {};
 
 			_.each(hrefs , function(url){
+
+				var dmInfo = parseDomain(url);
+        //console.dir(dmInfo);
+				var rootDomain = dmInfo.domain + '.' + dmInfo.tld;
+        //console.log(rootDomain);
+
+
 				urlSetRedis.exist(utils.md5(url) , function(err , reply){
 					if (err) {
 						eventEmitter.emit('event-error', 'urlSetRedis exist error when test ' + domain + ' ' + err);
 						return;
 					}
 
+          //console.log('url set redis reply : ' + reply);
+          //console.log('url : ' + url);
 					//reply == 0, 说明没有
 					if (!reply) {
-						eventEmitter.emit('event-new-url', url);
+						//发现一个新url
+						//是否加入队列，取决于该域名下爬了多少个
+						domainSetRedis.get(utils.md5(rootDomain), function (err, reply) {
+							//console.log('domain set get:' + reply);
+							//console.log('domain :' + rootDomain);
+
+							if (err) {
+								eventEmitter.emit('event-error', 'domainSetRedis exist error when test ' + rootDomain + ' ' + err);
+								return;
+							}
+
+							if (!reply) {
+                if(!rootDomainHash[rootDomain]){
+                  eventEmitter.emit('event-new-domain', rootDomain);
+                  rootDomainHash[rootDomain] = 1;
+                }
+
+                eventEmitter.emit('event-new-url', url);// 在这里才加入
+
+							}else if(reply < MAX_URL_PER_DOMAIN ){
+                eventEmitter.emit('event-inc-domain-url' , rootDomain , reply);
+                eventEmitter.emit('event-new-url', url);// 在这里才加入
+              }else{
+                console.log("fetch url or url in queue from " + rootDomain + 'is ' + reply + ' times' );
+              }
+
+						});
+
 					}
 
 				});
+
+
+
+
 			});
 
-			//start 测试是否新域名
-			// domainSetRedis中存储着发现过的domain
 
-			_.each(domains, function (domain) {
-				domainSetRedis.exist(utils.md5(domain), function (err, reply) {
-					if (err) {
-						eventEmitter.emit('event-error', 'domainSetRedis exist error when test ' + domain + ' ' + err);
-						return;
-					}
-
-					if (!reply) {
-						eventEmitter.emit('event-new-domain', domain);
-					}
-				});
-			});
-			//end 测试新域名
 
 		}
 	});
@@ -218,7 +240,7 @@ var bagpipe = new RedisBagpipe(redisClient, 'task_queue_key',
 	}, 3);
 
 
-//bagpipe.clear();//是否从头开始爬
+
 
 bagpipe.on('full', function (length) {
 
@@ -232,6 +254,20 @@ process.on('uncaughtException', function(err){
 	console.log('Caught exception:' + err);
 
 });
+
+function clearAll(){
+	START_TASK = [
+		//{url: 'http://www.hao123.com', retry: 0, timeout: 15000}
+		{url: 'http://www.hao123.com'}
+	];
+
+//清空两个set
+	domainSetRedis.delMainKey();
+	urlSetRedis.delMainKey();
+	bagpipe.clear();//是否从头开始爬
+}
+
+clearAll();
 
 setTimeout(crawler.start, 3000);
 
