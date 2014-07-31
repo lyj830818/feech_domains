@@ -3,7 +3,7 @@
  * Created by Administrator on 14-1-8.
  */
 
-var config = require('./config').vbox,
+var config = require('./config').aliyun,
 	redis = require('redis'),
 	rHash = require('./src/RemoteHash'),
 	req = require('./src/Req'),
@@ -38,6 +38,8 @@ var errorHandler = function (message) {
 }
 
 var domainStream = fs.createWriteStream('./domains.txt', {flags: 'a', encoding: 'utf8'});
+var overFlowUrls = fs.createWriteStream('./overflow-urls.txt', {flags: 'a', encoding: 'utf8'});
+
 
 
 var write2File = function (domain) {
@@ -83,8 +85,9 @@ eventEmitter.addListener('event-new-url' , function( rootDomain , url){
 
 var MAX_URL_PER_DOMAIN = 10;
 var MAX_URL_TO_ADD_ONE_PAGE = 2;
-var CONCURRENCE = 10;
+var CONCURRENCE = 20;
 
+var START_TASK;
 
 
 var crawler = {};
@@ -277,10 +280,12 @@ var bagpipe = new RedisBagpipe(redisClient, 'task_queue_key',
 
 
 
-bagpipe.on('full', function (length) {
+bagpipe.on('full', function (length, url) {
 
 	logger.debug('xxxxxxxxxxxxx，目前长度为' + length);
-	process.exit();
+	domainStream.write(url + '\n');
+
+	//process.exit();
 
 });
 
@@ -293,7 +298,7 @@ process.on('uncaughtException', function(err){
 function clearAll(){
 	START_TASK = [
 		//{url: 'http://www.hao123.com', retry: 0, timeout: 15000}
-		{url: 'http://www.hao123.com'}
+	//	{url: 'http://www.hao123.com'}
 	];
 
 //清空两个set

@@ -1,4 +1,4 @@
-var config = require('./config').vbox,
+var config = require('./config').aliyun,
   redis = require('redis'),
   _ = require('underscore'),
   fs = require('fs'),
