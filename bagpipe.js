@@ -100,6 +100,7 @@ var R = new req.Req();
 var RETRY_TIMES = 2;
 
 var request_id = 0;
+var respNetErrMap = {};
 crawler.oneurl = function (task, cb) {
 
 	//logger.debug(task.url);
@@ -114,17 +115,21 @@ crawler.oneurl = function (task, cb) {
     logger.debug('receive request_id : %d' , request_id);
 		cb();//网络请求结束，调用下一个task
 
+
 		if (err) {
-			eventEmitter.emit('event-error', 'error get request_id:' + request_id + ' ' + err);
-			/*
-			//取消重试
-			task.retry += 1;
-			if (task.retry < RETRY_TIMES) {
-				task.timeout *= 2;
+      //重试一次
+			if ( (err == 'ETIMEDOUT' || err == 'ESOCKETTIMEDOUT') && _.isUndefined(task.retry) ) {
+				//task.timeout *= 2;
+        task.retry = 1;
 				bagpipe.push(task);
 				logger.debug('retry task' + task.url);
 			}
-			*/
+
+			eventEmitter.emit('event-error', 'error get request_id:' + request_id + ' ' + err);
+      if( err == 'ETIMEDOUT' || err == 'ESOCKETTIMEDOUT'){
+          respNetErrMap[request_id] = '1';
+          checkNeedRestart(respNetErrMap, request_id);
+      }
 			return;
 		}
 
@@ -324,10 +329,30 @@ process.on('exit', function () {
 */
 
 process.on('SIGINT', function() {
-  console.log("Caught interrupt signal");
+  logger.info("Caught interrupt signal");
   process.exit();
 });
 
+function checkNeedRestart(respNetErrMap, id){
+
+  var totalErr = 0;
+  var start = id - 20;
+  start = start >= 0 ? start : 0;
+  for(var i = start ; i <= id; i++){
+    if(respNetErrMap[i] === 1){
+      totalErr++;
+    }
+  }
+
+  logger.info("recent resp has %d's network error", totalErr);
+
+  if(totalErr > 10){
+    logger.info("recent resp has %d's network error,so need to restart", totalErr);
+    process.exit();
+  }
+
+
+}
 
 function clearAll(){
 	START_TASK = [
