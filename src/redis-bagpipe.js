@@ -8,7 +8,7 @@ var events = require("events");
  * 构造器，传入限流值，设置异步调用最大并发数
  * Examples:
  * ```
- * var bagpipe = new RedisBagpipe(100);
+ * var bagpipe = new Bagpipe(100);
  * bagpipe.push(fs.readFile, 'path', 'utf-8', function (err, data) {
  *   // TODO
  * });

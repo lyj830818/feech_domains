@@ -19,7 +19,7 @@ exports.connect = function(host, port, timeout, listener){
 
   if(typeof(timeout) == 'function'){
     listener = timeout;
-    timeout = 0;
+    timeout = 30000;
   }
   listener = listener || function(){};
 
@@ -36,7 +36,9 @@ exports.connect = function(host, port, timeout, listener){
     connected = true;
     sock.setNoDelay(true);
     sock.setKeepAlive(true);
-    sock.setTimeout(timeout);
+    sock.setTimeout(timeout , function(err){
+	    console.dir('socket timeout '+ err);
+    });
     listener(0, self);
   });
 
@@ -182,13 +184,94 @@ exports.connect = function(host, port, timeout, listener){
       if(callback){
         var err = resp[0] == 'ok'? 0 : resp[0];
         var val = resp[1];
+        if(!err){
+          val = val.toString('utf-8');
+        }
         callback(err, val);
       }
     });
   }
 
+
+
+  //add by lyj
   self.qpush = function(key, val, callback){
     self.request('qpush', [key, val ], function(resp){
+      if(callback){
+        var err = resp[0] == 'ok'? 0 : resp[0];
+        var val = resp[1];
+        if(!err){
+          val = val.toString('utf-8');
+        }
+        callback(err, val);
+      }
+    });
+  }
+
+  self.qpop_front = function(key, callback){
+    self.request('qpop_front', [key], function(resp){
+      if(callback){
+        var err = resp[0] == 'ok'? 0 : resp[0];
+        var val = resp[1];
+        if(!err){
+          val = val.toString('utf-8');
+        }
+        callback(err, val);
+      }
+    });
+  }
+
+  self.qsize = function(key, callback){
+    self.request('qsize', [key ], function(resp){
+      if(callback){
+        var err = resp[0] == 'ok'? 0 : resp[0];
+        var val = resp[1];
+        if(!err){
+          val = parseInt(val.toString('utf-8'));
+        }
+        callback(err, val);
+      }
+    });
+  }
+
+  self.qclear = function(key, callback){
+    self.request('qclear', [key ], function(resp){
+      if(callback){
+        var err = resp[0] == 'ok'? 0 : resp[0];
+        var val = resp[1];
+        if(!err){
+          val = val.toString('utf-8');
+        }
+        callback(err, val);
+      }
+    });
+  }
+
+  self.hclear = function(name, callback){
+    self.request('hclear', [name ], function(resp){
+      if(callback){
+        var err = resp[0] == 'ok'? 0 : resp[0];
+        var val = resp[1];
+        callback(err, val);
+      }
+    });
+  }
+  
+  self.hexists = function(name , key, callback){
+    self.request('hexists', [name , key ], function(resp){
+      if(callback){
+        var err = resp[0] == 'ok'? 0 : resp[0];
+        var val = resp[1];
+        if(!err){
+          val = parseInt(val.toString('utf-8'));
+        }
+        callback(err, val);
+      }
+    });
+  }
+
+  self.hincr = function(name , key, num, callback){
+    self.request('hincr', [name , key , num], function(resp){
       if(callback){
         var err = resp[0] == 'ok'? 0 : resp[0];
         var val = resp[1];
@@ -350,11 +433,13 @@ exports.connect = function(host, port, timeout, listener){
     self.request('hget', [name, key], function(resp){
       if(callback){
         var err = resp[0] == 'ok'? 0 : resp[0];
+        var val = null;
         if(resp.length == 2){
-          callback(err, resp[1]);
-        }else{
-          callback('error');
+          if(!err){
+            val = parseInt(resp[1].toString('utf-8'));
+          }
         }
+        callback(err, val );
       }
     });
   }

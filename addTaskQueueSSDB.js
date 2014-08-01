@@ -3,12 +3,13 @@ var config = require('./config').aliyun,
   _ = require('underscore'),
   fs = require('fs'),
   utils = require('./src/utils.js'),
+  SSDB = require('./src/SSDB.js'),
   Bagpipe = require('./src/observer-redis-bagpipe');
 
 
-var redisClient = redis.createClient(config.redis.port, config.redis.host);
+var ssdbClient = SSDB.connect( config.ssdb.host,config.ssdb.port, function(err){});
 
-var bagpipe = new Bagpipe(redisClient, 'task_queue_key',
+var bagpipe = new Bagpipe('ssdb' , ssdbClient, 'task_queue_key',
                                function(){}, function () {
                                }, 3);
 
@@ -28,6 +29,7 @@ for(var i in domains){
 }
 
 bagpipe.clear();
+bagpipe.UpLenForever();
 
-setTimeout(addTask, 2000);
+setTimeout(addTask, 3000);
 

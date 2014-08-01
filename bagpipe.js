@@ -16,20 +16,16 @@ var config = require('./config').vbox,
 	urlParser = require('url'),
 	crypto = require('crypto'),
 	utils = require('./src/utils.js'),
-	RedisBagpipe = require('./src/observer-redis-bagpipe'),
+	Bagpipe = require('./src/observer-redis-bagpipe'),
 	parseDomain = require("parse-domain");
 
-var log4js = require('log4js'); 
+var logger = require('./src/Logger').logger;
 
-log4js.configure({
-  appenders: [
-    { type : 'console'},
-    { type: 'file', filename: 'logs/cheese.log', category: 'cheese' }
-  ]
-});
+var MAX_URL_PER_DOMAIN = 30;
+var MAX_URL_TO_ADD_ONE_PAGE = 5;
+var CONCURRENCE = 15;
 
-var logger = log4js.getLogger('cheese');
-
+var START_TASK;
 
 
 var eventEmitter = new events.EventEmitter();
@@ -47,6 +43,7 @@ var write2File = function (domain) {
 	//logger.debug(domain);
 	//var success = domainStream.write(domain + '\n');
   //console.dir('write success:' + success);
+  //logger.debug('qpush domains');
   ssdbClient.qpush('domains' , domain , function(err , reply){
     if(err){
       eventEmitter.emit('event-error', 'push error domain = ' + domain + ' ' + err);
@@ -55,14 +52,14 @@ var write2File = function (domain) {
 }
 
 
-var redisClient = redis.createClient(config.redis.port, config.redis.host);
+//var redisClient = redis.createClient(config.redis.port, config.redis.host);
 
-var ssdbClient = SSDB.connect( config.ssdb.host,config.ssdb.port, function(err){});
+var ssdbClient = SSDB.connect( config.ssdb.host,config.ssdb.port);
 
 //记录每个域名爬过的页面数
-var domainSetRedis = new rHash.RemoteHash(redisClient, {'serverType': 'redis', 'mainKey': 'domainSetkeys'});
+var domainSet = new rHash.RemoteHash(ssdbClient, {'serverType': 'ssdb', 'mainKey': 'domainSetkeys'});
 //url 去重 set
-var urlSetRedis = new rHash.RemoteHash(redisClient, {'serverType': 'redis', 'mainKey': 'urlSetkeys'});
+var urlSet = new rHash.RemoteHash(ssdbClient, {'serverType': 'ssdb', 'mainKey': 'urlSetkeys'});
 
 
 
@@ -72,9 +69,10 @@ eventEmitter.addListener('event-new-domain', write2File);
 
 
 eventEmitter.addListener('event-inc-domain-url', function(domain){
-	domainSetRedis.inc(utils.md5(domain), function (err, reply) {
+  //logger.debug('domainSet inc~~~~');
+	domainSet.inc(utils.md5(domain), function (err, reply) {
 		if (err) {
-			eventEmitter.emit('event-error', 'domainSetRedis inc error when domain = ' + domain + ' ' + err);
+			eventEmitter.emit('event-error', 'domainSet inc error when domain = ' + domain + ' ' + err);
 		}
 	});
 });
@@ -86,18 +84,15 @@ eventEmitter.addListener('event-new-url' , function( rootDomain , url){
 
   eventEmitter.emit('event-inc-domain-url' , rootDomain );
 
-	urlSetRedis.set(utils.md5(url), '1', function (err, reply) {
+  //logger.debug('urlSet set~~~~');
+	urlSet.set(utils.md5(url), '1', function (err, reply) {
 		if (err) {
-			eventEmitter.emit('event-error', 'urlSetRedis set error when url = ' + url + ' ' + err);
+			eventEmitter.emit('event-error', 'urlSet set error when url = ' + url + ' ' + err);
 		}
 	});
 });
 
-var MAX_URL_PER_DOMAIN = 10;
-var MAX_URL_TO_ADD_ONE_PAGE = 2;
-var CONCURRENCE = 20;
 
-var START_TASK;
 
 
 var crawler = {};
@@ -114,9 +109,9 @@ crawler.oneurl = function (task, cb) {
   logger.debug('send request_id : %d', ++request_id);
   logger.debug('getting url : %s', task.url);
 	R.get(task.url, {timeout: timeout}, function (err, response, body) {
-    
-    logger.debug('receive request_id : %d' , request_id);
 
+
+    logger.debug('receive request_id : %d' , request_id);
 		cb();//网络请求结束，调用下一个task
 
 		if (err) {
@@ -137,6 +132,9 @@ crawler.oneurl = function (task, cb) {
 			//统一按utf-8解码
 			//todo:根据response header的 " Content-Type:text/html;charset=utf-8"
 			//todo: 以及<meta http-equiv="content-type" content="text/html;charset=utf-8">解码
+      if(!body){
+        return;
+      }
 			body = iconvLite.decode(body, 'utf8');
 			var $ = cheerio.load(body);
 			var hrefs = [];
@@ -217,14 +215,17 @@ crawler.oneurl = function (task, cb) {
 			_.each(hrefs , function(url){
 
 				var dmInfo = parseDomain(url);
+        if(dmInfo == null){
+          return;
+        }
         //logger.debug(dmInfo);
 				var rootDomain = dmInfo.domain + '.' + dmInfo.tld;
         //logger.debug(rootDomain);
 
 
-				urlSetRedis.exist(utils.md5(url) , function(err , reply){
+				urlSet.exists(utils.md5(url) , function(err , reply){
 					if (err) {
-						eventEmitter.emit('event-error', 'urlSetRedis exist error when test ' + domain + ' ' + err);
+						eventEmitter.emit('event-error', 'urlSet exists error when test ' + domain + ' ' + err);
 						return;
 					}
 
@@ -234,16 +235,18 @@ crawler.oneurl = function (task, cb) {
 					if (!reply) {
 						//发现一个新url
 						//是否加入队列，取决于该域名下爬了多少个
-						domainSetRedis.get(utils.md5(rootDomain), function (err, reply) {
+						domainSet.get(utils.md5(rootDomain), function (err, reply) {
 							//logger.debug('domain set get:' + reply);
 							//logger.debug('domain :' + rootDomain);
 
-							if (err) {
-								eventEmitter.emit('event-error','request_id:'+ request_id + 'domainSetRedis exist error when test ' + rootDomain + ' ' + err);
+							if (err && err !== 'not_found') {
+								eventEmitter.emit('event-error','request_id:'+request_id+' domainSet get error when test ' + rootDomain + ' ' + err);
 								return;
 							}
 
-							if (!reply) {
+              reply = parseInt(reply);
+
+							if (_.isNaN(reply)) {
                 addNewDomain(rootDomain); 
 
                 addUrl(rootDomain , url);
@@ -281,9 +284,10 @@ crawler.start = function () {
 		bagpipe.push(task);
 	});
 	bagpipe.observer();
+	bagpipe.UpLenForever();
 }
 
-var bagpipe = new RedisBagpipe(redisClient, 'task_queue_key',
+var bagpipe = new Bagpipe('ssdb' , ssdbClient, 'task_queue_key',
 	crawler.oneurl, function () {
 	}, CONCURRENCE);
 
@@ -293,30 +297,31 @@ var bagpipe = new RedisBagpipe(redisClient, 'task_queue_key',
 bagpipe.on('full', function (length, url) {
 
 	logger.debug('xxxxxxxxxxxxx，目前长度为' + length);
-  console.dir("full url:" + url);
-	//var success = overFlowUrls.write(url + '\n');
-  ssdbClient.qpush('overflow-urls',url, function(err, reply){
-    if(err){
-      eventEmitter.emit('event-error', 'push error overflow-url = ' + url + ' ' + err);
-    }
-    
-  });
-  //console.dir('write success:' +  success);
+	process.exit();
 
-	//process.exit();
+});
+
+bagpipe.on('ssdb-error', function (length, url) {
+
+	process.exit();
 
 });
 
 //http://www.rainweb.cn/article/355.html
+
+/*
 process.on('uncaughtException', function(err){
 	logger.debug('Caught exception:' + err);
 
 });
+*/
 
+/*
 process.on('exit', function () {
   //domainStream.end();
   console.log('Bye.');
 });
+*/
 
 process.on('SIGINT', function() {
   console.log("Caught interrupt signal");
@@ -327,16 +332,16 @@ process.on('SIGINT', function() {
 function clearAll(){
 	START_TASK = [
 		//{url: 'http://www.hao123.com', retry: 0, timeout: 15000}
-		{url: 'http://www.hao123.com'}
+	//	{url: 'http://www.2345.com'}
 	];
 
 //清空两个set
-	domainSetRedis.delMainKey();
-	urlSetRedis.delMainKey();
+	domainSet.delMainKey();
+	urlSet.delMainKey();
 	bagpipe.clear();//是否从头开始爬
 }
 
-clearAll();
+//setTimeout(clearAll,1000);
 
 setTimeout(crawler.start, 3000);
 

@@ -4,6 +4,7 @@
 
 var _ = require('underscore'),
 	request = require('request');
+  //hyperquest = require('hyperquest');
 var http = require('http');
 
 function Req(headers) {
@@ -52,7 +53,8 @@ function Req(headers) {
 		'followRedirect': true,
 		'encoding': null,
 		'timeout': 20000,
-		'pool': pool
+		//'pool' : pool
+		'pool': false
 	};
 
 }
@@ -62,12 +64,17 @@ Req.prototype.get = function (url, option, cb) {
 	this.option = _.extend(this.option, option);
 
 	if (!this.headers['user-agent']) {
-		this.headers['user-agent'] = this.userAgents[_.random(0, this.userAgents.length)];
+		//this.headers['user-agent'] = this.userAgents[_.random(0, this.userAgents.length)];
+		this.headers['user-agent'] = this.userAgents[1];
 	}
 
 	this.option['url'] = url;
 	this.option['headers'] = this.headers;
 
 	request(this.option, cb);
+  
+
+	//this.option['uri'] = url;
+	//hyperquest(this.option, cb);
 
 };
