@@ -190,10 +190,10 @@ crawler.oneurl = function (task, cb) {
       var rootDomainHash = {};
       var urlDomainHash = {};
 
-      function addNewDomain(rootDomain){
+      function addNewDomain(rootDomain, wholeDomain){
         if(!rootDomainHash[rootDomain]){
 
-          eventEmitter.emit('event-new-domain', rootDomain);
+          eventEmitter.emit('event-new-domain', wholeDomain);
           rootDomainHash[rootDomain] = 1;
           logger.debug("add new domain:%s", rootDomain);
           eventEmitter.emit('event-inc-domain-url' , rootDomain );
@@ -225,6 +225,11 @@ crawler.oneurl = function (task, cb) {
         }
         //logger.debug(dmInfo);
 				var rootDomain = dmInfo.domain + '.' + dmInfo.tld;
+        var wholeDomain = rootDomain;
+        if(dmInfo.subdomain){
+          wholeDomain = dmInfo.subdomain + '.' + wholeDomain;
+        }
+
         //logger.debug(rootDomain);
 
 
@@ -252,7 +257,7 @@ crawler.oneurl = function (task, cb) {
               reply = parseInt(reply);
 
 							if (_.isNaN(reply)) {
-                addNewDomain(rootDomain); 
+                addNewDomain(rootDomain, wholeDomain); 
 
                 addUrl(rootDomain , url);
 
