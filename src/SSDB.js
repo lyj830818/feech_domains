@@ -9,6 +9,7 @@
 
 var net = require('net');
 
+
 // timeout: microseconds, if ommitted, it will be treated as listener
 // callback(err, ssdb)
 exports.connect = function(host, port, timeout, listener){
@@ -17,10 +18,15 @@ exports.connect = function(host, port, timeout, listener){
   var callbacks = [];
   var connected = false;
 
+  if(timeout === undefined){
+    timeout = 0;
+  }
+
   if(typeof(timeout) == 'function'){
     listener = timeout;
-    timeout = 30000;
+    timeout = 0;
   }
+
   listener = listener || function(){};
 
   var sock = new net.Socket();
@@ -29,6 +35,11 @@ exports.connect = function(host, port, timeout, listener){
       listener('connect_failed', e);
     }else{
       var callback = callbacks.shift();
+	    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+	    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+	    console.log(e);
+	    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+	    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
       callback(['error']);
     }
   });
@@ -36,8 +47,11 @@ exports.connect = function(host, port, timeout, listener){
     connected = true;
     sock.setNoDelay(true);
     sock.setKeepAlive(true);
+    //sock.setKeepAlive(false);
+    console.log('timeout:' + timeout);
     sock.setTimeout(timeout , function(err){
-	    console.dir('socket timeout '+ err);
+      console.dir(err);
+	    console.dir('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx socket timeout '+ err);
     });
     listener(0, self);
   });
@@ -88,6 +102,7 @@ exports.connect = function(host, port, timeout, listener){
       bs.push('\n');
     }
     bs.push('\n');
+    //console.log('write request' + bs );
     var req = build_buffer(bs);
     sock.write(req);
     //console.log('write ' + req.length + ' bytes');
@@ -96,11 +111,13 @@ exports.connect = function(host, port, timeout, listener){
 
   sock.on('data', function(data){
     recv_buf = build_buffer([recv_buf, data]);
+    //console.dir('recv_buf:' + recv_buf);
     while(recv_buf.length > 0){
       var resp = parse();
       if(!resp){
         break;
       }
+      //console.dir('resp parsed:' + resp);
       resp[0] = resp[0].toString();
       var callback = callbacks.shift();
       callback(resp);

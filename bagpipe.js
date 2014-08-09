@@ -7,7 +7,8 @@ var config = require('./config').vbox,
 	redis = require('redis'),
   SSDB = require('./src/SSDB.js'),
 	rHash = require('./src/RemoteHash'),
-	req = require('./src/Req'),
+	//req = require('./src/Req'),
+	netReq = require('./src/netReq'),
 	_ = require('underscore'),
 	events = require('events'),
 	iconvLite = require('iconv-lite'),
@@ -23,19 +24,46 @@ var logger = require('./src/Logger').logger;
 
 var MAX_URL_PER_DOMAIN = 30;
 var MAX_URL_TO_ADD_ONE_PAGE = 5;
-var CONCURRENCE = 15;
+var CONCURRENCE = 30;
 
 var START_TASK;
 
 
 var eventEmitter = new events.EventEmitter();
 
-var errorHandler = function (message) {
-	logger.error(message);
-}
-
 //var domainStream = fs.createWriteStream('./domains.txt', {flags: 'a', encoding: 'utf8'});
 //var overFlowUrls = fs.createWriteStream('./overflow-urls.txt', {flags: 'a', encoding: 'utf8'});
+
+var dnsErrorDmStream = fs.createWriteStream('./dns-error1.txt', {flags: 'a', encoding: 'utf8'});
+var networkTimeoutDmStream = fs.createWriteStream('./net-timeout-dm.txt', {flags: 'a', encoding: 'utf8'});
+
+
+
+var redisClient = redis.createClient(config.redis.port, config.redis.host);
+var resultRedisClient = redis.createClient(config.result_redis.port, config.result_redis.host);
+
+//var ssdbClient = SSDB.connect( config.ssdb.host,config.ssdb.port );
+
+//记录每个域名爬过的页面数
+//var domainSet = new rHash.RemoteHash(ssdbClient, {'serverType': 'ssdb', 'mainKey': 'domainSetkeys'});
+var domainSet = new rHash.RemoteHash(redisClient, {'serverType': 'redis', 'mainKey': 'domainSetkeys'});
+//url 去重 set
+//var urlSet = new rHash.RemoteHash(ssdbClient, {'serverType': 'ssdb', 'mainKey': 'urlSetkeys'});
+var urlSet = new rHash.RemoteHash(redisClient, {'serverType': 'redis', 'mainKey': 'urlSetkeys'});
+
+
+
+var errorHandler = function (message, obj) {
+  //
+  if(message.indexOf('getHostByName ETIMEOUT') >= 0 || (obj && obj.err && obj.err.syscall == 'getHostByName')){
+    dnsErrorDmStream.write( obj.url + '\n');
+  }
+  if(obj && obj.err == 'NetReq Timeout Emitted' ){
+    networkTimeoutDmStream.write( obj.url + '\n');
+  }
+  console.log(message);
+}
+
 
 
 
@@ -44,22 +72,16 @@ var write2File = function (domain) {
 	//var success = domainStream.write(domain + '\n');
   //console.dir('write success:' + success);
   //logger.debug('qpush domains');
-  ssdbClient.qpush('domains' , domain , function(err , reply){
+
+//  ssdbClient.qpush('domains' , domain , function(err , reply){
+  resultRedisClient.rpush('domains' , domain , function(err , reply){
     if(err){
       eventEmitter.emit('event-error', 'push error domain = ' + domain + ' ' + err);
     }
   });
+
 }
 
-
-//var redisClient = redis.createClient(config.redis.port, config.redis.host);
-
-var ssdbClient = SSDB.connect( config.ssdb.host,config.ssdb.port);
-
-//记录每个域名爬过的页面数
-var domainSet = new rHash.RemoteHash(ssdbClient, {'serverType': 'ssdb', 'mainKey': 'domainSetkeys'});
-//url 去重 set
-var urlSet = new rHash.RemoteHash(ssdbClient, {'serverType': 'ssdb', 'mainKey': 'urlSetkeys'});
 
 
 
@@ -96,7 +118,7 @@ eventEmitter.addListener('event-new-url' , function( rootDomain , url){
 
 
 var crawler = {};
-var R = new req.Req();
+var R = new netReq.Req();
 var RETRY_TIMES = 2;
 
 var request_id = 0;
@@ -106,7 +128,7 @@ crawler.oneurl = function (task, cb) {
 	//logger.debug(task.url);
 	//logger.debug(task.timeout);
 
-	var timeout = 30000;
+	var timeout = 60000;
   logger.debug('send request_id : %d', ++request_id);
   logger.debug('getting url : %s', task.url);
 	R.get(task.url, {timeout: timeout}, function (err, response, body) {
@@ -118,21 +140,22 @@ crawler.oneurl = function (task, cb) {
 
 		if (err) {
       //重试一次
+      /*
 			if ( (err == 'ETIMEDOUT' || err == 'ESOCKETTIMEDOUT') && _.isUndefined(task.retry) ) {
 				//task.timeout *= 2;
         task.retry = 1;
 				bagpipe.push(task);
 				logger.debug('retry task' + task.url);
 			}
+     */
 
-			eventEmitter.emit('event-error', 'error get request_id:' + request_id + ' ' + err);
+			eventEmitter.emit('event-error', 'error get request_id:' + request_id + ' ' + err,{ url:task.url, err : err});
       if( err == 'ETIMEDOUT' || err == 'ESOCKETTIMEDOUT'){
           respNetErrMap[request_id] = '1';
           checkNeedRestart(respNetErrMap, request_id);
       }
 			return;
 		}
-
 		if (response.statusCode === 200) {
 			//统一按utf-8解码
 			//todo:根据response header的 " Content-Type:text/html;charset=utf-8"
@@ -205,13 +228,13 @@ crawler.oneurl = function (task, cb) {
         if(!urlDomainHash[rootDomain]){
           eventEmitter.emit('event-new-url', rootDomain, url);// 在这里才加入
           urlDomainHash[rootDomain] = 1;
-          logger.debug("add url:%s", url);
+          //logger.debug("add url:%s", url);
 
 
         }else if (urlDomainHash[rootDomain] < MAX_URL_TO_ADD_ONE_PAGE){
           eventEmitter.emit('event-new-url', rootDomain,url);// 在这里才加入
           urlDomainHash[rootDomain]++;
-          logger.debug("add url:%s", url);
+          //logger.debug("add url:%s", url);
 
 
         }
@@ -297,7 +320,8 @@ crawler.start = function () {
 	bagpipe.UpLenForever();
 }
 
-var bagpipe = new Bagpipe('ssdb' , ssdbClient, 'task_queue_key',
+//var bagpipe = new Bagpipe('ssdb' , ssdbClient, 'task_queue_key',
+var bagpipe = new Bagpipe('redis' , redisClient, 'task_queue_key',
 	crawler.oneurl, function () {
 	}, CONCURRENCE);
 
@@ -319,12 +343,11 @@ bagpipe.on('ssdb-error', function (length, url) {
 
 //http://www.rainweb.cn/article/355.html
 
-/*
 process.on('uncaughtException', function(err){
 	logger.debug('Caught exception:' + err);
+  logger.warn(err.stack)
 
 });
-*/
 
 /*
 process.on('exit', function () {
@@ -362,7 +385,7 @@ function checkNeedRestart(respNetErrMap, id){
 function clearAll(){
 	START_TASK = [
 		//{url: 'http://www.hao123.com', retry: 0, timeout: 15000}
-	//	{url: 'http://www.2345.com'}
+	{url: 'http://www.2345.com'}
 	];
 
 //清空两个set

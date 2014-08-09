@@ -73,7 +73,7 @@ Bagpipe.prototype.clear = function () {
   switch(that.type){
     case 'redis':
       this.server.del(this.taskQueueKey, function (err,reply) {
-      }); 
+      });
       break;
     case 'ssdb':
       this.server.qclear(this.taskQueueKey, function(err , reply){
@@ -136,7 +136,10 @@ Bagpipe.prototype.next = function () {
 
   switch(that.type){
     case 'redis':
+	    that.pop_id++;
+	    logger.info("start qpop_front id:" + that.pop_id);
       that.server.lpop(that.taskQueueKey, function (err, replies) {
+	      logger.info("end qpop_front id:" + that.pop_id);
         //replies == null 时说明队列为空
         if (err || replies === null) {
           //对提前加上或减去的数值进行修正
@@ -188,8 +191,8 @@ Bagpipe.prototype.observer = function(){
 	var that = this;
 	setTimeout(function(){
 		logger.debug("-------------------------------------");
-		logger.debug('pre pop active:' + that.activePrePop);
-		logger.debug('post pop active:' + that.activePostPop);
+		logger.warn('pre pop active:' + that.activePrePop);
+		logger.warn('post pop active:' + that.activePostPop);
 		if(that.activePrePop === that.limit &&
 			(that.activePrePop - that.activePostPop) > 10){
 //		if(that.activePrePop > 3){
