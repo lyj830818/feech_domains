@@ -17,6 +17,7 @@
   "dependencies": {
     "async": "~>=0.2.9",
     "bagpipe": "~0.3.5",
+    "buffer-search": "^1.2.0",
     "chai": "~1.8.1",
     "cheerio": ">=0.13.1",
     "hyperquest": "^0.3.0",
@@ -28,6 +29,7 @@
     "phantom": ">=0.5.4",
     "redis": ">=0.10.0",
     "request": ">=2.30.0",
-    "underscore": "~1.5.2"
+    "underscore": "~1.5.2",
+    "underscore.string": "^2.3.3"
   }
 }
