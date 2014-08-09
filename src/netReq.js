@@ -14,6 +14,7 @@ var iconvLite = require('iconv-lite');
 var _s = require('underscore.string');
 
 var bufSearch = require('buffer-search');
+var zlib = require('zlib');
 
 var req_id = 0;
 function Req(headers) {
@@ -54,7 +55,7 @@ function Req(headers) {
 
 	var defaultHeaders = {
 		'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-		//'Accept-Encoding' : 'gzip,deflate',
+		'Accept-Encoding' : 'gzip,deflate',
 		'Accept-Language':'en-us,en;q=0.5',
 		'Accept-Charset' : '',
 		'Cache-Control' : 'no-cache',
@@ -119,6 +120,91 @@ function build_buffer(arr){
 	return ret;
 }
 
+function parseRespHeaders(raw){
+  var lines = raw.split("\x0d\x0a");
+  var res = {};
+  var arr;
+  _.each(lines ,function(line){
+    arr = line.split(":");
+    res[_s.trim(arr[0]).toLowerCase()] = _s.trim(arr[1]).toLowerCase();
+  });
+  return res;
+}
+
+function collcetChunk(respBody){
+	var respBuf = '';
+  var chunkLen = 0;
+  var end;
+  var start = 0;
+   // console.log('------body length ----');
+  //console.dir(respBody.length);
+
+  /*
+  var idx = 0;
+     end= bufSearch(respBody , new Buffer("\x0d\x0a") , start);
+     var ch =respBody.slice(start , end).toString('utf-8');
+    console.log('------1111 ----');
+    console.log('------ch ----');
+     console.dir(ch);
+     chunkLen = parseInt(respBody.slice(start , end).toString('utf-8'), 16);
+     respBuf = build_buffer([respBuf , respBody.slice( end + 2, end + 2 + chunkLen) ]);
+    console.log('------end----');
+     console.dir(end);
+    console.log('------chunk len----');
+     console.dir(chunkLen);
+
+
+
+     start = end + 2 + chunkLen + 2;
+     end= bufSearch(respBody , new Buffer("\x0d\x0a") , start);
+     var ch =respBody.slice(start , end).toString('utf-8');
+    console.log('------222 ----');
+    console.log('------ch ----');
+     console.dir(ch);
+     chunkLen = parseInt(respBody.slice(start , end), 16);
+     respBuf = build_buffer([respBuf , respBody.slice( end + 2, end + 2 + chunkLen) ]);
+    console.log('------end----');
+     console.dir(end);
+    console.log('------chunk len----');
+     console.dir(chunkLen);
+
+
+     start = end + 2 + chunkLen + 2;
+     end= bufSearch(respBody , new Buffer("\x0d\x0a") , start);
+     var ch =respBody.slice(start , end).toString('utf-8');
+    console.log('------33333 ----');
+     console.dir(ch);
+     chunkLen = parseInt(respBody.slice(start , end), 16);
+     respBuf = build_buffer([respBuf , respBody.slice( end + 2, end + 2 + chunkLen) ]);
+     console.dir(end);
+     console.dir(chunkLen);
+
+
+    console.log('------buf length ----');
+     console.dir(respBuf.length);
+     process.exit();
+    */
+
+  while(1){
+     end= bufSearch(respBody , new Buffer("\x0d\x0a") , start);
+   //  console.dir('---------end---------')
+   //  console.dir(end);
+     chunkLen = parseInt(respBody.slice(start , end), 16);
+  //   console.dir('---------chunklen---------')
+  //   console.dir(chunkLen);
+     if(chunkLen == 0){
+       break;
+     }
+
+     respBuf = build_buffer([respBuf , respBody.slice( end + 2, end + 2 + chunkLen) ]);
+
+     start = end + 2 + chunkLen + 2; //end + \r\n + chunk + \r\n
+  }
+  //console.dir(respBuf.length);
+  return respBuf;
+
+}
+
 function sendHttp(ip , port , path, headers, options, cb ){
 	port = port || 80;
 	headers = headerStr(headers);
@@ -164,6 +250,7 @@ function sendHttp(ip , port , path, headers, options, cb ){
 		//console.log('socket is end');
 		console.dir('time spent: ' + (endTime - startTime));
 		//var resp = iconvLite.decode(respBuf, 'utf8');
+    
 		var headend = bufSearch(respBuf , new Buffer("\x0d\x0a\x0d\x0a") , 0);
 		var headBuf = respBuf.slice(0 , headend);
 		//console.dir( iconvLite.decode(headBuf, 'utf8'));
@@ -171,14 +258,35 @@ function sendHttp(ip , port , path, headers, options, cb ){
 //		//resp = resp.split("\x0d\x0a\x0d\x0a");
 		var respHeader = {};
 		respHeader.raw = _s.trim(iconvLite.decode(headBuf, 'utf8'));
+    respHeader.headers = parseRespHeaders(respHeader.raw);
 		respHeader.statusCode = parseInt(respHeader.raw.substring(9 , 12));
 		var respBody = respBuf.slice(headend + 4);
-		//console.dir( iconvLite.decode(respBody, 'utf8'));
-		cb(cbErr, respHeader, respBody);
-		return;
-		//console.dir(respHeader);
-		//console.dir('---------------')
-		//console.dir(respBody);
+
+    //console.dir(respHeader)
+    if(respHeader.headers['transfer-encoding'] == 'chunked'){
+      respBody = collcetChunk(respBody);
+    }
+
+
+    if(respHeader.headers['content-encoding'] == 'gzip'){
+      zlib.gunzip(respBody , function(err , buf){
+        console.dir(err);
+        respBody = buf;
+        cb(cbErr, respHeader, respBody);
+        return;
+      });
+    }else if(respHeader.headers['content-encoding'] == 'deflate'){
+      zlib.inflate(respBody , function(err , buf){
+        respBody = buf;
+        cb(cbErr, respHeader, respBody);
+        return;
+      });
+    }
+
+    cb(cbErr, respHeader, respBody);
+    return;
+    
+
 	});
 
 	client.on('error' , function(err){
