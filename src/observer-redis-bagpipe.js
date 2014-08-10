@@ -137,15 +137,15 @@ Bagpipe.prototype.next = function () {
   switch(that.type){
     case 'redis':
 	    that.pop_id++;
-	    logger.info("start qpop_front id:" + that.pop_id);
+	    logger.info("start lpop id:" + that.pop_id);
       that.server.lpop(that.taskQueueKey, function (err, replies) {
-	      logger.info("end qpop_front id:" + that.pop_id);
+	      logger.info("end lpop id:" + that.pop_id);
         //replies == null 时说明队列为空
         if (err || replies === null) {
           //对提前加上或减去的数值进行修正
           that.activePrePop--;
-          logger.debug('rpop error ' + err);
-          logger.debug('rpop replies' + replies);
+          logger.debug('lpop error ' + err);
+          logger.debug('lpop replies ' + replies);
           return;
         }
         var args = JSON.parse(replies);
@@ -195,9 +195,7 @@ Bagpipe.prototype.observer = function(){
 		logger.debug("-------------------------------------");
 		logger.warn('pre pop active:' + that.activePrePop);
 		logger.warn('post pop active:' + that.activePostPop);
-		if(that.activePrePop === that.limit &&
-			(that.activePrePop - that.activePostPop) > 10){
-//		if(that.activePrePop > 3){
+		if(that.activePrePop - that.activePostPop > 5){
 			logger.debug("conncet exceptino ,let terminate the process");
 			that.emit('ssdb-error');
 //			that.activePrePop = 0;

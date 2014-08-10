@@ -15,7 +15,7 @@ checkedList = []
 for nameServer in nameServers:
 	resolver.nameservers=[nameServer]
 	try:
-		rdata = resolver.query('www.yahoo.com', 'A')
+		rdata = resolver.query('www.baidu.com', 'A')
 		checkedList.append(nameServer)
 		print nameServer
 		print rdata
