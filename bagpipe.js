@@ -24,7 +24,7 @@ var logger = require('./src/Logger').logger;
 
 var MAX_URL_PER_DOMAIN = 30;
 var MAX_URL_TO_ADD_ONE_PAGE = 5;
-var CONCURRENCE = 30;
+var CONCURRENCE = 100;
 
 var START_TASK;
 
@@ -123,7 +123,7 @@ var RETRY_TIMES = 2;
 
 var request_id = 0;
 var respNetErrMap = {};
-crawler.oneurl = function (task, cb) {
+crawler.oneurl = function (task, cb, task_idx) {
 
 	//logger.debug(task.url);
 	//logger.debug(task.timeout);
@@ -134,9 +134,9 @@ crawler.oneurl = function (task, cb) {
 	R.get(task.url, {timeout: timeout}, function (err, response, body) {
 
 
-    logger.debug('receive request_id : %d' , request_id);
-    logger.debug('response' , response);
-		cb();//网络请求结束，调用下一个task
+    var copy_req_id = request_id;
+    logger.debug('receive request_id : %d' , copy_req_id);
+		cb(task_idx);//网络请求结束，调用下一个task
 
 
 		if (err) {

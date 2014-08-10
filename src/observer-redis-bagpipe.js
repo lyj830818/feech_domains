@@ -29,6 +29,7 @@ var Bagpipe = function (type, server, taskQueueKey, method, callback, limit, opt
   this.type = type;
 	this.taskQueueKey = taskQueueKey;
 	this.limit = limit;
+	this.activeTask = {}; 
 	this.method = method;
 	this.callback = callback;
 	this.activePrePop = 0;
@@ -40,6 +41,7 @@ var Bagpipe = function (type, server, taskQueueKey, method, callback, limit, opt
 	//this.maxLength = 1 * 100;
   this.queueLength = 0;
 	this.pop_id = 0;
+	this.task_idx = 0;
 };
 
 util.inherits(Bagpipe, events.EventEmitter);
@@ -182,12 +184,36 @@ Bagpipe.prototype.next = function () {
 
 };
 
-Bagpipe.prototype._finish = function () {
+Bagpipe.prototype._finish = function (idx) {
 
   //logger.debug('active--');
+  delete this.activeTask[idx];
 	this.activePrePop--;
 	this.activePostPop--;
 };
+
+
+Bagpipe.prototype.deleteTimeoutTask= function(){
+  var that = this;
+  var TASK_TIMEOUT = 300;
+  var task;
+  for(var key in that.activeTask){
+
+    task = that.activeTask[key];
+    var now = new Date();
+    //console.log('time --');
+    //console.log(now - task['start_time']);
+    if(now - task['start_time'] > TASK_TIMEOUT * 1000 ){
+      delete that.activeTask[task.idx];
+      that.activePrePop--;
+      that.activePostPop--;
+      console.dir('delete task:');
+      console.dir(task);
+      console.log(now - task['start_time']);
+    }
+  }
+
+}
 
 Bagpipe.prototype.observer = function(){
 	var that = this;
@@ -195,6 +221,9 @@ Bagpipe.prototype.observer = function(){
 		logger.debug("-------------------------------------");
 		logger.warn('pre pop active:' + that.activePrePop);
 		logger.warn('post pop active:' + that.activePostPop);
+
+    that.deleteTimeoutTask();
+    
     /*
 		if(that.activePrePop - that.activePostPop > 5){
 			logger.debug("conncet exceptino ,let terminate the process");
@@ -219,7 +248,7 @@ Bagpipe.prototype.observer = function(){
    */
 
 		that.observer();
-	} , 1000);
+	} , 10000);
 
 }
 
@@ -240,16 +269,21 @@ Bagpipe.prototype.UpLenForever = function(){
 Bagpipe.prototype.run = function (method, args) {
 	var that = this;
 
+  this.task_idx++;
+
 	//这是method方法中的异步调用完成后调用的方法，用来通知队列进行_finish()
-	args.push(function (err) {
+	args.push(function (task_idx) {
 
 		that.callback.apply(null, arguments);
-		that._finish();
+		that._finish(task_idx);
 
 	});
+  args.push(this.task_idx);
+  var task_info = {'idx': this.task_idx,'start_time' : new Date(),'url' : args[0].url};
+  this.activeTask[this.task_idx] = task_info;
 
-  //logger.debug('args:')
-  //logger.debug(args);
+  logger.debug('args:')
+  logger.debug(args);
 	method.apply(null, args);
 };
 
