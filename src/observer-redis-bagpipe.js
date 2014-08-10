@@ -144,7 +144,8 @@ Bagpipe.prototype.next = function () {
         if (err || replies === null) {
           //对提前加上或减去的数值进行修正
           that.activePrePop--;
-          logger.debug('rpop error' + err);
+          logger.debug('rpop error ' + err);
+          logger.debug('rpop replies' + replies);
           return;
         }
         var args = JSON.parse(replies);
@@ -183,6 +184,7 @@ Bagpipe.prototype.next = function () {
 
 Bagpipe.prototype._finish = function () {
 
+  logger.debug('active--');
 	this.activePrePop--;
 	this.activePostPop--;
 };
@@ -246,6 +248,8 @@ Bagpipe.prototype.run = function (method, args) {
 
 	});
 
+  logger.debug('args:')
+  logger.debug(args);
 	method.apply(null, args);
 };
 

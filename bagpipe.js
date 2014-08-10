@@ -3,7 +3,7 @@
  * Created by Administrator on 14-1-8.
  */
 
-var config = require('./config').vbox,
+var config = require('./config').mania,
 	redis = require('redis'),
   SSDB = require('./src/SSDB.js'),
 	rHash = require('./src/RemoteHash'),
@@ -135,6 +135,7 @@ crawler.oneurl = function (task, cb) {
 
 
     logger.debug('receive request_id : %d' , request_id);
+    logger.debug('response' , response);
 		cb();//网络请求结束，调用下一个task
 
 
@@ -228,7 +229,7 @@ crawler.oneurl = function (task, cb) {
         if(!urlDomainHash[rootDomain]){
           eventEmitter.emit('event-new-url', rootDomain, url);// 在这里才加入
           urlDomainHash[rootDomain] = 1;
-          //logger.debug("add url:%s", url);
+         // logger.debug("add url:%s", url);
 
 
         }else if (urlDomainHash[rootDomain] < MAX_URL_TO_ADD_ONE_PAGE){
@@ -394,7 +395,7 @@ function clearAll(){
 	bagpipe.clear();//是否从头开始爬
 }
 
-//setTimeout(clearAll,1000);
+setTimeout(clearAll,1000);
 
 setTimeout(crawler.start, 3000);
 

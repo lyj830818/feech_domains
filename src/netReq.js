@@ -316,7 +316,7 @@ Req.prototype.get = function (url, option, cb) {
 	}
 
 	//domain = 'baidu.com';
-	dns.resolve(domain, 'A', '127.0.0.1', function (err, results) {
+	dns.resolve(domain, 'A', function (err, results) {
 		if(err){
 			cb(err);
 			return;
