@@ -1,4 +1,4 @@
-var config = require('./config').aliyun,
+var config = require('./config').mania,
   redis = require('redis'),
   _ = require('underscore'),
   fs = require('fs'),
@@ -8,21 +8,20 @@ var config = require('./config').aliyun,
 
 var redisClient = redis.createClient(config.redis.port, config.redis.host);
 
-var bagpipe = new Bagpipe(redisClient, 'task_queue_key',
+var bagpipe = new Bagpipe('redis', redisClient, 'task_queue_key',
                                function(){}, function () {
                                }, 3);
 
 
 
 var addTask = function (){
-var txt = fs.readFileSync('wm123_links.txt', 'utf-8');
+var txt = fs.readFileSync('uniq-domains.txt', 'utf-8');
 var domains = txt.split("\n");
 for(var i in domains){
   domain = domains[i].trim();
   if(domain == ''){
     continue;
   }
-  domain = 'http://' + domain;
   bagpipe.push({url: domain})
   }
 }
