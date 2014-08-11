@@ -337,9 +337,11 @@ bagpipe.on('full', function (length, url) {
 });
 
 bagpipe.on('ssdb-error', function (length, url) {
-
 	process.exit();
+});
 
+bagpipe.on('restart', function (length, url) {
+	process.exit();
 });
 
 //http://www.rainweb.cn/article/355.html

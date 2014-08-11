@@ -35,6 +35,7 @@ var Bagpipe = function (type, server, taskQueueKey, method, callback, limit, opt
 	this.activePrePop = 0;
 	this.activePostPop = 0;
 	this.queue = [];
+  this.startTime = new Date();
 
 	//队列最大长度，redis应该是无限的，为防止内存占用过大，设一个小点值
   this.maxLength = 20 * 1000 * 1000; // 10M * sizeof(item)
@@ -222,6 +223,12 @@ Bagpipe.prototype.deleteTimeoutTask= function(){
 Bagpipe.prototype.observer = function(){
 	var that = this;
 	setTimeout(function(){
+    //restart every hour
+    if(new Date() - that.startTime > 3600000){
+      that.emit('restart');
+      return;
+    }
+
 		logger.debug("-------------------------------------");
 		logger.warn('pre pop active:' + that.activePrePop);
 		logger.warn('post pop active:' + that.activePostPop);
