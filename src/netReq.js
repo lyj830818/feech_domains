@@ -271,13 +271,16 @@ function sendHttp(ip , port , path, headers, options, cb ){
     if(respHeader.headers['content-encoding'] == 'gzip'){
       zlib.gunzip(respBody , function(err , buf){
         respBody = buf;
+        cb(err, respHeader, respBody);
       });
     }else if(respHeader.headers['content-encoding'] == 'deflate'){
       zlib.inflate(respBody , function(err , buf){
         respBody = buf;
+        cb(err, respHeader, respBody);
       });
+    }else{
+      cb(cbErr, respHeader, respBody);
     }
-    cb(cbErr, respHeader, respBody);
 
 	});
 
