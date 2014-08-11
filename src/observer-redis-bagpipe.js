@@ -195,9 +195,12 @@ Bagpipe.prototype._finish = function (idx) {
 
 Bagpipe.prototype.deleteTimeoutTask= function(){
   var that = this;
-  var TASK_TIMEOUT = 300;
+  var TASK_TIMEOUT = 250;
   var task;
+  console.dir(that.activeTask);
+  var len = 0;
   for(var key in that.activeTask){
+    ++len;
 
     task = that.activeTask[key];
     var now = new Date();
@@ -212,6 +215,7 @@ Bagpipe.prototype.deleteTimeoutTask= function(){
       console.log(now - task['start_time']);
     }
   }
+  console.log('activeTask len:' + len);
 
 }
 
