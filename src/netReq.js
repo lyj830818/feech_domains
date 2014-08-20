@@ -139,6 +139,8 @@ function collcetChunk(respBody){
    // console.log('------body length ----');
   //console.dir(respBody.length);
 
+  var bodyLen = respBody.length;
+
   /*
   var idx = 0;
      end= bufSearch(respBody , new Buffer("\x0d\x0a") , start);
@@ -192,7 +194,8 @@ function collcetChunk(respBody){
      chunkLen = parseInt(respBody.slice(start , end), 16);
   //   console.dir('---------chunklen---------')
   //   console.dir(chunkLen);
-     if(chunkLen == 0){
+     var sliceEnd = end + 2 + chunkLen;
+     if(!chunkLen || sliceEnd > bodyLen){
        break;
      }
 
